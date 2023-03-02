@@ -6,6 +6,51 @@ namespace GeometryTests
     public class TriangleTests
     {
         [TestMethod]
+        public void CompareTwoTriangleHashCodes_TrianglesHaveDifferentDimensions_HashCodesAreNotEqual()
+        {
+            Triangle a = new Triangle(3, 4, 5);
+            Triangle b = new Triangle(4, 5, 6);
+
+            Assert.AreNotEqual(a.GetHashCode(), b.GetHashCode());
+        }
+
+        [TestMethod]
+        public void CompareTwoTriangleHashCodes_TrianglesHaveSameDimensions_HashCodesAreEqual()
+        {
+            Triangle a = new Triangle(3, 4, 5);
+            Triangle b = new Triangle(3, 4, 5);
+
+            Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
+        }
+
+        [TestMethod]
+        public void TestTriangleEquality_TrianglesHaveSameDimensions_ReturnsTrue()
+        {
+            Triangle a = new Triangle(3, 4, 5);
+            Triangle b = new Triangle(3, 4, 5);
+
+            Assert.AreEqual(a, b);
+        }
+
+        [TestMethod]
+        public void TestTriangleEquality_TrianglesAreSameButCreatedWithSidesInDifferentOrder_ReturnsTrue()
+        {
+            Triangle a = new Triangle(3, 4, 5);
+            Triangle b = new Triangle(5, 4, 3);
+
+            Assert.AreEqual(a, b);
+        }
+
+        [TestMethod]
+        public void TestTriangleEquality_TrianglesAreDifferent_ReturnsFalse()
+        {
+            Triangle a = new Triangle(3, 4, 5);
+            Triangle b = new Triangle(4, 5, 6);
+
+            Assert.AreNotEqual(a, b);
+        }
+
+        [TestMethod]
         public void TryCreateTriangleMethod_ProvidingCorrectArguments_ReturnsTrue()
         {
             bool isCreated = Triangle.TryCreate(3d, 4d, 5d, out _);
@@ -17,7 +62,6 @@ namespace GeometryTests
         {
             Triangle result;
             Triangle.TryCreate(3d, 4d, 5d, out result);
-            Console.WriteLine(result);
             Assert.IsNotNull(result);
         }
 
@@ -67,7 +111,7 @@ namespace GeometryTests
         {
             Assert.ThrowsException<ArgumentException>(() =>
                 {
-                    Triangle _ = new Triangle(1d,2d,3d);
+                    Triangle _ = new Triangle(1d, 2d, 3d);
                 });
         }
 
@@ -89,7 +133,7 @@ namespace GeometryTests
                 Triangle triangle = new Triangle(1d, 2d, double.NaN);
             });
         }
-        
+
         [TestMethod]
         public void TriangleAreaCalc_TriangleWithCorrectDimensions_CalculatesCorrectArea()
         {
@@ -104,14 +148,14 @@ namespace GeometryTests
         public void CheckingForRightAngledness_TriangleIsRightAngled_ReturnsTrue()
         {
             var triangle = new Triangle(3d, 4d, 5d);
-            Assert.IsTrue(triangle.CheckIfRightAngled());
+            Assert.IsTrue(triangle.IsRightAngled);
         }
 
         [TestMethod]
         public void CheckingForRightAngledness_TriangleIsNotRightAngled_ReturnsFalse()
         {
             var triangle = new Triangle(7d, 10d, 5d);
-            Assert.IsFalse(triangle.CheckIfRightAngled());
+            Assert.IsFalse(triangle.IsRightAngled);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Geometry
 {
-    public abstract record Shape
+    public abstract class Shape
     {
         public abstract double GetArea();
     }

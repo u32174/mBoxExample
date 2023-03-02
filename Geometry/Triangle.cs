@@ -1,20 +1,17 @@
-﻿namespace Geometry
-{
-    public record Triangle : Shape
-    {
-        public double SideA { get; init; }
-        public double SideB { get; init; }
-        public double SideC { get; init; }
+﻿using System.Collections.ObjectModel;
 
-        private Lazy<bool> _isRightAngled;
+namespace Geometry
+{
+    public class Triangle : Shape, IEquatable<Triangle>
+    {
+        public ReadOnlyCollection<double> Sides { get; private init; }
+        public bool IsRightAngled { get => CheckIfIsRightAngled(); }
 
         //для случаев, когда бросание исключения нежелательно
         public static bool TryCreate(double sideA, double sideB, double sideC, out Triangle triangle)
         {
             triangle = null;
 
-            // можно было для красоты передавать стороны массивом и
-            // проверять их в цикле, но это добавит лишнюю нагрузку на память и цпу
             if (!CheckIfSideIsValid(sideA))
             {
                 return false;
@@ -35,7 +32,7 @@
                 return false;
             }
 
-            triangle = new Triangle() { SideA = sideA, SideB = sideB, SideC = sideC };
+            triangle = new Triangle() { Sides = SidesToSortedCollection(sideA, sideB, sideC) };
             return true;
         }
 
@@ -44,14 +41,14 @@
             ThrowOnInvalidSides(sideA, sideB, sideC);
             ThrowOnInvalidTriangle(sideA, sideB, sideC);
 
-            SideA = sideA;
-            SideB = sideB;
-            SideC = sideC;
+
+            Sides = SidesToSortedCollection(sideA, sideB, sideC);
+
         }
+
 
         private Triangle()
         {
-            _isRightAngled = new Lazy<bool>(() => CheckIfIsRightAngled(), true);
         }
 
         public override double GetArea()
@@ -66,16 +63,39 @@
              * 
              */
 
-            double s = (SideA + SideB + SideC) / 2d;
-            double area = Math.Sqrt(s * (s - SideA) * (s - SideB) * (s - SideC));
+            double s = (Sides[0] + Sides[1] + Sides[2]) / 2d;
+            double area = Math.Sqrt(s * (s - Sides[0]) * (s - Sides[1]) * (s - Sides[2]));
             return area;
         }
 
-        // можно было сделать через свойство,но тогда бы оно учавствовало в sequential equality этого record'а по умолчанию
-        // в этом примере сделал методом, чтобы не переписывать Equals(), GetHashCode() и ToString()
-        public bool CheckIfRightAngled()
+        public override bool Equals(object obj)
         {
-            return _isRightAngled.Value;
+            return obj is Triangle && Equals((Triangle)obj);
+        }
+
+        public bool Equals(Triangle other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            const int SIDES_COUNT = 3; //у ReadOnlyCollection нет Length
+
+            for (int i = 0; i < SIDES_COUNT; i++)
+            {
+                if (Sides[i] != other.Sides[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Sides[0], Sides[1], Sides[2]);
         }
 
         private static bool CheckIfSideIsValid(double side)
@@ -114,38 +134,13 @@
             double cathetus1;
             double cathetus2;
 
-            DistinguishHypotenuse(out hypotenuse, out cathetus1, out cathetus2);
 
-            hypotenuse = Math.Pow(hypotenuse, 2);
-            cathetus1 = Math.Pow(cathetus1, 2);
-            cathetus2 = Math.Pow(cathetus2, 2);
+            hypotenuse = Math.Pow(Sides[2], 2);
+            cathetus1 = Math.Pow(Sides[1], 2);
+            cathetus2 = Math.Pow(Sides[0], 2);
 
             return hypotenuse.EqualWithPrecision(cathetus1 + cathetus2);
         }
-
-        private void DistinguishHypotenuse(out double hypotenuse, out double cathetus1, out double side3)
-        {
-            //для красоты можно было отсортировать массив сторон и выбрать гипотенузу, но это медленнее
-            if (SideA > SideB && SideA > SideC)
-            {
-                hypotenuse = SideA;
-                cathetus1 = SideB;
-                side3 = SideC;
-            }
-            else if (SideB > SideA && SideB > SideC)
-            {
-                hypotenuse = SideB;
-                cathetus1 = SideA;
-                side3 = SideC;
-            }
-            else
-            {
-                hypotenuse = SideC;
-                cathetus1 = SideA;
-                side3 = SideB;
-            }
-        }
-
 
         private void ThrowOnInvalidTriangle(double sideA, double sideB, double sideC)
         {
@@ -153,6 +148,19 @@
             {
                 throw new ArgumentException("Triangle is invalid");
             }
+        }
+
+        private static ReadOnlyCollection<double> SidesToSortedCollection(double sideA, double sideB, double sideC)
+        {
+            double[] inputSides = new double[] { sideA, sideB, sideC };
+            for (int i = 0; i < inputSides.Length; i++)
+            {
+                inputSides[i] = Math.Round(inputSides[i], Calculator.PRECISION);
+            }
+
+            Array.Sort(inputSides);
+
+            return new ReadOnlyCollection<double>(inputSides);
         }
 
     }

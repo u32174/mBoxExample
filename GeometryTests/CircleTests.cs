@@ -7,6 +7,67 @@ namespace GeometryTests
     public class CircleTests
     {
         [TestMethod]
+        public void CompareTwoCircleHashCodes_CirclesHaveDifferentRadius_HashCodesAreDifferent()
+        {
+            Circle a = new Circle(1d);
+            Circle b = new Circle(1.1d);
+
+            Assert.AreNotEqual(a.GetHashCode(), b.GetHashCode());
+        }
+
+        [TestMethod]
+        public void CompareTwoCircleHashCodes_CirclesHaveSameRadius_HashCodesAreEqual()
+        {
+            Circle a = new Circle(1d);
+            Circle b = new Circle(1d);
+
+            Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
+        }
+
+        [TestMethod]
+        public void CompareTwoCircleHashCodes_CirclesHaveDifferenceLessThanPrecision_HashCodesAreEqual()
+        {
+            Circle a = new Circle(1d);
+            Circle b = new Circle(1.000000000001d);
+
+            Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
+        }
+
+        [TestMethod]
+        public void TestEquals_OtherIsNull_ReturnsFalse() 
+        {
+            Circle c = new(123d);
+            Assert.IsFalse(c.Equals(null));
+        }
+
+        [TestMethod]
+        public void TestEquals_OtherIsDifferent_ReturnsFalse() 
+        {
+            Circle smaller = new(1d);
+            object bigger = new Circle(4d);
+
+            Assert.IsFalse(smaller.Equals(bigger));
+        }
+
+        [TestMethod]
+        public void TestEquals_otherIsEqual_returnsTrue() 
+        {
+            Circle left = new(1d);
+            object right = new Circle(1d);
+
+            Assert.IsTrue(left.Equals(right));
+        }
+
+        [TestMethod]
+        public void TestEquatable_otherIsEqual_returnsTrue() 
+        {
+            IEquatable<Circle> left = new Circle(1d);
+            Circle right = new(1d);
+
+            Assert.IsTrue(left.Equals(right));
+        }
+
+        [TestMethod]
         public void TryCircleCreateMethod_ValidRadius_ReturnsTrue() 
         {
             Assert.IsTrue(Circle.TryCreate(1d, out _));
